@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {body, validationResult} = require('express-validator');
+const {body, check, validationResult} = require('express-validator');
 //in this project, our instance of sequelize is called 'db'
 const {db} = require('../db'); 
 const {User} = require('../models/index')
@@ -9,24 +9,45 @@ const {User} = require('../models/index')
 router.get(
     '/',
     async (req,res) =>{
-        try{}catch(err){};
+        try{
+            let users = await User.findAll()
+            res.status(200).json(users);
+        }catch(err){
+            res.status(500)
+            console.error(err);
+        };
     }
 )
+
 //Get user
 router.get(
     '/:id',
     async (req,res) =>{
         let id = req.params.id;
-        try{}catch(err){};
+        try{
+            let user = await User.findByPk(id);
+            if(user){
+                res.status(200).send(user)
+            }else{
+                res.status(404).send("User doesn't exsist")
+                console.log("User doesn't exist")
+            }
+        }catch(err){
+            res.status(500)
+            console.error(err);
+        };
     }
 )
-
+/*
 //POST to users
 router.post(
     '/',
-    check(),
+    check("name").isEmpty(),
     async (req,res)=>{
-        try{}catch(err){};
+        try{}catch(err){
+            res.status(500)
+            console.error(err);
+        };
     }
 )
 
@@ -35,7 +56,10 @@ router.put(
     '/:id',
     async (req,res) =>{
         let id = req.params.id;
-        try{}catch(err){};
+        try{}catch(err){
+            res.status(500)
+            console.error(err);
+        };
     }
 )
 
@@ -55,5 +79,5 @@ router.delete(
     }
 )
 
-
+*/
 module.exports = router;
