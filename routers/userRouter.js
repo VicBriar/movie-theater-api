@@ -38,19 +38,33 @@ router.get(
         };
     }
 )
-/*
+
 //POST to users
 router.post(
     '/',
-    check("name").isEmpty(),
+    check("username").not().isEmpty().trim().withMessage("username cannot be blank"),
+    check("username").isLength({min: 3, max: 30}).withMessage("username must be at least 2 characters, and not excede 15"),
+    check("password").not().isEmpty().trim().isStrongPassword({minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1, returnScore: false}),
     async (req,res)=>{
-        try{}catch(err){
+        try{
+            let errors = validationResult(req)
+            if(errors.isEmpty()){
+                let user = req.body;
+                await User.create({username: user.username, password: user.password});
+                 //this is to confirm I sucessfully added the user; delete later
+                let users = await User.findAll();
+                res.status(200).json(users);
+            }else{
+                res.status(406).send(errors);
+            }
+        }catch(err){
             res.status(500)
             console.error(err);
         };
     }
 )
 
+/*
 //PUT a user
 router.put(
     '/:id',

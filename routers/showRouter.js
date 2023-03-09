@@ -5,6 +5,7 @@ const {body, check, validationResult} = require('express-validator');
 const {db} = require('../db'); 
 const {Show} = require('../models/index')
 
+let genreEnum = ["Comedy", "Drama", "Horror", "Sitcom"]
 //GET all shows
 router.get(
     '/',
@@ -39,16 +40,38 @@ router.get(
     }
 )
 
-/*
+
 //POST
 router.post(
     '/',
-    check(),
+    check("title").not().isEmpty().trim().withMessage("you must provide a title"),
+    check("genre").not().isEmpty().trim().withMessage("you must provide a genre"),
+    check("rating").isNumeric().trim().withMessage("rating must be a number"),
+    check("status").not().isEmpty().trim().withMessage("you must provide a status"),
     async (req,res)=>{
-        try{}catch(err){};
+        try{
+            let errors = validationResult(req);
+            if(errors.isEmpty()){
+                let {title, genre, rating, status} = req.body;
+                if(genreEnum.includes(genre)){
+                    let show = {title: title, genre: genre, rating: rating, status: status}
+                    await Show.create(show)
+                    //this is to confirm I sucessfully added the show; delete later
+                    let shows = await Show.findAll()
+                    res.status(200).json(shows);
+                }else{
+                    res.status(406).send(`${genre} is not allowed. please use ${genreEnum} next time.`)
+                }
+                
+            }else{
+                res.status(406).send(errors);
+            }
+        }catch(err){};
     }
 )
 
+
+/*
 //PUT
 router.put(
     '/:id',
