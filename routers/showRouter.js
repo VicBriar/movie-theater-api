@@ -66,7 +66,10 @@ router.post(
             }else{
                 res.status(406).send(errors);
             }
-        }catch(err){};
+        }catch(err){
+            res.status(500)
+            console.error(err);
+        };
     }
 )
 
