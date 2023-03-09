@@ -48,9 +48,10 @@ router.post(
     async (req,res)=>{
         try{
             let errors = validationResult(req)
+            let {username, password} = req.body;
             if(errors.isEmpty()){
                 let user = req.body;
-                await User.create({username: user.username, password: user.password});
+                await User.create({username, password});
                  //this is to confirm I sucessfully added the user; delete later
                 let users = await User.findAll();
                 res.status(200).json(users);
@@ -64,7 +65,7 @@ router.post(
     }
 )
 
-/*
+
 //PUT a user
 router.put(
     '/:id',
@@ -76,7 +77,7 @@ router.put(
         };
     }
 )
-
+/*
 //DELETE a user
 router.delete(
     '/:id',

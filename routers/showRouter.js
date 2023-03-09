@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {body, check, validationResult} = require('express-validator');
+const {body, check, validationResult, oneOf} = require('express-validator');
 //in this project, our instance of sequelize is called 'db'
 const {db} = require('../db'); 
 const {Show} = require('../models/index')
@@ -40,6 +40,28 @@ router.get(
     }
 )
 
+router.get(
+    '/genres/:genre',
+    async (req,res) => {
+        let genre = req.params.genre;
+        try{
+            if(genreEnum.includes(genre)){
+                let shows = await Show.findAll(
+                    {where:
+                     {genre: genre}
+                    }
+                )
+                res.status(200).json(shows);
+            }else{
+                res.status(406).send(`${genre} is not a valid genre`)
+            }
+            
+        }catch(err){
+            res.status(500)
+            console.error(err);
+        }
+    })
+
 
 //POST
 router.post(
@@ -54,12 +76,13 @@ router.post(
             if(errors.isEmpty()){
                 let {title, genre, rating, status} = req.body;
                 if(genreEnum.includes(genre)){
-                    let show = {title: title, genre: genre, rating: rating, status: status}
+                    let show = {title, genre, rating, status}
                     await Show.create(show)
                     //this is to confirm I sucessfully added the show; delete later
                     let shows = await Show.findAll()
                     res.status(200).json(shows);
                 }else{
+                    //1st implementation, allows custom errors but is a seperate error handler
                     res.status(406).send(`${genre} is not allowed. please use ${genreEnum} next time.`)
                 }
                 
@@ -74,16 +97,43 @@ router.post(
 )
 
 
-/*
+
 //PUT
 router.put(
     '/:id',
+    //how can I allow the absence of a key value pair, but catch the prescense of a key with an empty value pair?
+    oneOf([
+        check("rating").isNumeric().trim(),
+        check("rating").isEmpty().trim()
+    ]),
+    //2nd implementation; doesn't allow for custom errors
+    oneOf([
+        check("genre").equals(genreEnum[0]),
+        check("genre").equals(genreEnum[1]),
+        check("genre").equals(genreEnum[2]),
+        check("genre").equals(genreEnum[3]),
+        check("genre").isEmpty()
+    ]),
     async (req,res) =>{
         let id = req.params.id;
-        try{}catch(err){};
+        let errors = validationResult(req);
+        try{
+            if(errors.isEmpty()){
+                let show = await Show.findByPk(id);
+                show.set(req.body);
+                await show.save();
+                let shows = await Show.findAll()
+                res.status(200).json(shows)
+            }else {
+                res.status(406).send(errors); 
+            }
+        }catch(err){
+            res.status(500)
+            console.error(err);
+        }
     }
 )
-
+/*
 //DELETE
 router.delete(
     '/:id',
