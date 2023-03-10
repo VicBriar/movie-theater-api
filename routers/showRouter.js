@@ -48,7 +48,7 @@ router.get(
         };
     }
 )
-
+//get shows by genre
 router.get(
     '/genres/:genre',
     async (req,res) => {
@@ -72,17 +72,19 @@ router.get(
     })
 
 
-//POST
+//POST new SHOW
 router.post(
     '/',
     check("title").not().isEmpty().trim().withMessage("you must provide a title"),
     check("title").isAscii().withMessage("you must provide a valid title"),
     check("genre").not().isEmpty().trim().withMessage("you must provide a genre"),
     check("genre").isAscii().withMessage("you must povide a valid genre"),
-    //rating doesn't have to be provided, as new shows can't be rated before they're watched.
-    check("rating").isNumeric().trim().withMessage("rating must be a number"),
     check("status").not().isEmpty().trim().withMessage("you must provide a status"),
     check("status").isAscii().withMessage("you must provide a valid status"),
+    oneOf([//rating doesn't have to be provided, as new shows can't be rated before they're watched.
+        check("rating").isEmpty().withMessage("rating can be empty"),
+        check("rating").isNumeric().trim().withMessage("if not empty, rating must be a number")
+    ]),
     async (req,res)=>{
         try{
             let errors = validationResult(req);
@@ -111,7 +113,7 @@ router.post(
 )
 
 
-//PUT
+//PUT, update a show
 router.put(
     '/:id',
     //title can be empty or asci
