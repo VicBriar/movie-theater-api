@@ -3,7 +3,7 @@ const router = express.Router();
 const {body, check, validationResult} = require('express-validator');
 //in this project, our instance of sequelize is called 'db'
 const {db} = require('../db'); 
-const {User} = require('../models/index')
+const {User,Show} = require('../models/index')
 
 //GET all users
 router.get(
@@ -38,8 +38,24 @@ router.get(
         };
     }
 )
+//get user's shows
+router.get('/:id/shows', async (req,res) => {
+    let id = req.params.id;
+        try{
+            let user = await User.findByPk(id);
+            if(user){
+                res.status(200).send(user.getShows())
+            }else{
+                res.status(404).send("User doesn't exsist")
+                console.log("User doesn't exist")
+            }
+        }catch(err){
+            res.status(500)
+            console.error(err);
+        };
+    })
 
-//POST to users
+//POST new user to users
 router.post(
     '/',
     check("username").not().isEmpty().trim().withMessage("username cannot be blank"),
@@ -66,12 +82,33 @@ router.post(
 )
 
 
-//PUT a user
+//PUT a show to user
 router.put(
     '/:id',
+    check("showTitle").not().isEmpty().trim().withMessage("you must supply a show title"),
     async (req,res) =>{
         let id = req.params.id;
-        try{}catch(err){
+        let showTitle = req.body.showTitle;
+        try{
+            let user = await User.findByPk(id, {include: Show})
+            if(user){
+                let show = await Show.findOne({
+                    where:
+                        {title: showTitle}
+                    })
+                    if(showTitle){
+                        await user.addShow(show);
+                        await user.save()
+                        res.status(200).send(user)
+                    }else{
+                        res.status(404).send("Show doesn't exsist")
+                        console.log("Show doesn't exist")  
+                    }
+            }else{
+                res.status(404).send("User doesn't exsist")
+                console.log("User doesn't exist")
+            }
+        }catch(err){
             res.status(500)
             console.error(err);
         };

@@ -28,10 +28,10 @@ Now that we have the starting point, let’s get to work coding it out!  Use the
 Create the route handlers for the project, per these definitions:
 
 **Users**
-- `GET` all users
-- `GET` one user
-- `GET` all shows watched by a user (user id in `req.params`) 
-- `PUT` update and add a show if a user has watched it
+X `GET` all users
+X `GET` one user
+X `GET` all shows watched by a user (user id in `req.params`) 
+X `PUT` update and add a show if a user has watched it
 
 **Shows**
 - `GET` all shows
