@@ -114,22 +114,32 @@ router.put(
         };
     }
 )
-/*
+
 //DELETE a user
 router.delete(
     '/:id',
     async (req,res) =>{
         let id = req.params.id;
-        try{}catch(err){};
+        try{
+            let user = await User.findByPk(id, {include: Show})
+            if(user){
+                await user.destroy()
+                let users = await User.findAll()
+                res.status(200).send(users)
+            }else{
+                console.error(`user at id ${id} doesn't exist`)
+                res.status(404).send("user doesn't exist")
+            }
+
+        }catch(err){};
     }
 )
-//you can't delete database!
+//you can't delete all users!
 router.delete(
     '/',
     (req,res)=>{
-        res.status(405).send("You cannot delete all shows!")
+        res.status(405).send("You cannot delete all users!")
     }
 )
 
-*/
 module.exports = router;

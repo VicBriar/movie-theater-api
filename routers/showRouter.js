@@ -170,7 +170,7 @@ router.delete(
         try{
             let show = await Show.findByPk(id)
             if(show){
-                show.destroy();
+                await show.destroy();
                 let shows = await Show.findAll();
                 res.status(200).json(shows);
             }else{
@@ -182,7 +182,7 @@ router.delete(
         };
     }
 )
-
+//you can't delete all shows!
 router.delete(
     '/',
     (req,res)=>{
