@@ -6,6 +6,15 @@ const {db} = require('../db');
 const {Show} = require('../models/index')
 
 let genreEnum = ["Comedy", "Drama", "Horror", "Sitcom"]
+const assignValue = (key,value,object) => {
+    if(value){
+        object[key] = value;
+        console.log(`value is ${value} key is ${key}`);
+        return true;
+    }else{
+        return false;
+    }
+}
 //GET all shows
 router.get(
     '/',
@@ -67,14 +76,19 @@ router.get(
 router.post(
     '/',
     check("title").not().isEmpty().trim().withMessage("you must provide a title"),
+    check("title").isAscii().withMessage("you must provide a valid title"),
     check("genre").not().isEmpty().trim().withMessage("you must provide a genre"),
+    check("genre").isAscii().withMessage("you must povide a valid genre"),
+    //rating doesn't have to be provided, as new shows can't be rated before they're watched.
     check("rating").isNumeric().trim().withMessage("rating must be a number"),
     check("status").not().isEmpty().trim().withMessage("you must provide a status"),
+    check("status").isAscii().withMessage("you must provide a valid status"),
     async (req,res)=>{
         try{
             let errors = validationResult(req);
             if(errors.isEmpty()){
                 let {title, genre, rating, status} = req.body;
+                //validate enum, 1st implementation
                 if(genreEnum.includes(genre)){
                     let show = {title, genre, rating, status}
                     await Show.create(show)
@@ -97,22 +111,28 @@ router.post(
 )
 
 
-
 //PUT
 router.put(
     '/:id',
-    //how can I allow the absence of a key value pair, but catch the prescense of a key with an empty value pair?
+    //title can be empty or asci
     oneOf([
-        check("rating").isNumeric().trim(),
-        check("rating").isEmpty().trim()
+        check("title").isAscii().trim().withMessage("if title is provided, it must be valid title"),
+        check("title").isEmpty().trim().withMessage("title doesn't have to be provided")
     ]),
-    //2nd implementation; doesn't allow for custom errors
+    //rating can be numeric, or empty
     oneOf([
-        check("genre").equals(genreEnum[0]),
-        check("genre").equals(genreEnum[1]),
-        check("genre").equals(genreEnum[2]),
-        check("genre").equals(genreEnum[3]),
-        check("genre").isEmpty()
+        check("rating").isNumeric().trim().withMessage("if rating it provided, it must be a number"),
+        check("rating").isEmpty().trim().withMessage("rating doesn't have to be provided")
+    ]),
+    //genre can be an enum member, or empty
+    oneOf([
+        check("genre").isIn(genreEnum).withMessage("genre must be one of the valid types; Comedy, Drama, Horror, or Sitcom"),
+        check("genre").isEmpty().withMessage("genre doesn't have to be provided")
+    ]),
+    //status can be empty or ascii
+    oneOf([
+        check("status").isAscii().withMessage("you must provide a valid status"),
+        check("status").isEmpty().trim().withMessage("status doesn't have to be provided")
     ]),
     async (req,res) =>{
         let id = req.params.id;
@@ -120,7 +140,14 @@ router.put(
         try{
             if(errors.isEmpty()){
                 let show = await Show.findByPk(id);
-                show.set(req.body);
+                let values = {}
+                values.title = req.body.title;
+                values.rating = req.body.rating;
+                values.genre = req.body.genre;
+                values.status = req.body.status;
+                for(let key in values){
+                    assignValue(key,values[key],show)
+                }
                 await show.save();
                 let shows = await Show.findAll()
                 res.status(200).json(shows)
