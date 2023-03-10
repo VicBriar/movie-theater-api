@@ -116,23 +116,24 @@ router.put(
     '/:id',
     //title can be empty or asci
     oneOf([
-        check("title").isAscii().trim().withMessage("if title is provided, it must be valid title"),
-        check("title").isEmpty().trim().withMessage("title doesn't have to be provided")
+        check("title").isEmpty().trim().withMessage("title doesn't have to be provided"),
+        check("title").isAscii().trim().withMessage("if title is provided, it must be valid title")
     ]),
     //rating can be numeric, or empty
     oneOf([
-        check("rating").isNumeric().trim().withMessage("if rating it provided, it must be a number"),
-        check("rating").isEmpty().trim().withMessage("rating doesn't have to be provided")
+        check("rating").isEmpty().trim().withMessage("rating doesn't have to be provided"),
+        check("rating").isNumeric().trim().withMessage("if rating it provided, it must be a number")
     ]),
     //genre can be an enum member, or empty
     oneOf([
-        check("genre").isIn(genreEnum).withMessage("genre must be one of the valid types; Comedy, Drama, Horror, or Sitcom"),
-        check("genre").isEmpty().withMessage("genre doesn't have to be provided")
+        check("genre").isEmpty().withMessage("genre doesn't have to be provided"),
+        check("genre").isIn(genreEnum).withMessage("genre must be one of the valid types; Comedy, Drama, Horror, or Sitcom")
     ]),
     //status can be empty or ascii
     oneOf([
-        check("status").isAscii().withMessage("you must provide a valid status"),
-        check("status").isEmpty().trim().withMessage("status doesn't have to be provided")
+        check("status").isEmpty().trim().withMessage("status doesn't have to be provided"),
+        check("status").isAscii().withMessage("you must provide a valid status")
+        
     ]),
     async (req,res) =>{
         let id = req.params.id;
@@ -160,13 +161,25 @@ router.put(
         }
     }
 )
-/*
+
 //DELETE
 router.delete(
     '/:id',
     async (req,res) =>{
         let id = req.params.id;
-        try{}catch(err){};
+        try{
+            let show = await Show.findByPk(id)
+            if(show){
+                show.destroy();
+                let shows = await Show.findAll();
+                res.status(200).json(shows);
+            }else{
+                console.error("Show doesn't exist.")
+            }
+        }catch(err){
+            res.status(500)
+            console.error(err);
+        };
     }
 )
 
@@ -176,6 +189,5 @@ router.delete(
         res.status(405).send("You cannot delete all shows!")
     }
 )
-*/
 //export
 module.exports = router;

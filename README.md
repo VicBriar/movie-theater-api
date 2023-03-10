@@ -37,9 +37,9 @@ X `PUT` update and add a show if a user has watched it
 X `GET` all shows
 X `GET` one show
 X `GET` shows of a particular genre (genre in req.params)
-- `PUT` update rating of a show that has been watched
-- `PUT` update the status of a show 
-- `DELETE` a show
+X `PUT` update rating of a show that has been watched
+X `PUT` update the status of a show 
+X `DELETE` a show
 
 **Make sure to include your routers in a directory named `routes`**
 
